@@ -1,0 +1,63 @@
+//HW7 Yang Gan
+//758916858
+#include <iostream> 
+#include<vector>
+#include<algorithm>
+using namespace std;
+void Plot(int n, int x, int y, vector<vector<char>> &V) {
+	if (n < 3)return;
+	if (n == 3) {
+		V[x][y] = 'o';
+		V[x][y+4] = 'o';
+		V[x+1][y] = '|';
+		V[x+1][y+4] = '|';
+		V[x+2][y] = 'o';
+		V[x+2][y+1] = '-';
+		V[x+2][y+2] = 'o';
+		V[x+2][y+3] = '-';
+		V[x+2][y+4] = 'o';
+		V[x+3][y] = '|';
+		V[x+3][y+4] = '|';
+		V[x+4][y] = 'o';
+		V[x+4][y+4] = 'o';
+		return;
+}
+	Plot(n - 1, x, y,V);
+	if (n % 2 == 0) {
+		Plot(n - 1, x+6 * pow(2, (n - 4) / 2), y, V);
+		int a = 6 * pow(2, (n - 4) / 2)-1;
+		int b = 6 * pow(2, (n - 4) / 2) / 2-1;
+		V[x+a][y+b] = 'o';
+		for (int i = 1; i <= b; i++) {
+			V[x+a+i][y+b] = '|';
+			V[x+a-i][y+b] = '|';
+		}
+	}
+	else {
+		Plot(n - 1, x,y+ 6 * pow(2, (n - 5) / 2), V);
+		int a = 6 * pow(2, (n - 5) / 2)-1;
+			int b = 6 * pow(2, (n - 5) / 2)/2-1;
+			V[x + a][y + a] = 'o';
+			for (int i = 1; i <= b; i++) {
+				V[x + a ][y + a + i] = '-';
+				V[x + a ][y + a - i] = '-';
+			}		
+	}
+}
+void plot(int n, int x, int y) {
+	vector<vector<char>> V((6 * pow(2, (n - 2) / 2) - 1), vector<char>(6 * pow(2, (n - 3) / 2) - 1, ' '));
+	Plot(n, x, y, V);
+	for (int i = 0; i < 6 * pow(2, (n - 2) / 2) - 1; i++) {
+		for (int j = 0; j < 6 * pow(2, (n - 3) / 2) - 1; j++) {
+			cout << V[i][j];
+		}
+		cout << endl;
+	}
+}
+
+int main() {
+	plot(6, 0, 0);
+	getchar();
+	getchar();
+	return 1;
+}
