@@ -1,0 +1,260 @@
+//HW8 YANG GAN
+//SUID 758916858
+#include<iostream>
+#include<vector>
+#include<string>
+#include<fstream>
+#include<map>
+#include<algorithm>
+using namespace std;
+class deck {
+public:
+	vector<string>Deck{ "KC", "QC","JC","10C","9C","8C","7C","6C","5C","4C","3C","2C","AC",
+		"KD","QD","JD","10D","9D","8D","7D","6D","5D","4D","3D","2D","AD",
+		"KH","QH","JH","10H","9H","8H","7H","6H","5H","4H","3H","2H","AH",
+		"KS","QS","JS","10S","9S","8S","7S","6S","5S","4S","3S","2S","AS"};
+	deck() {}
+	void shffule(vector<string>&V){
+		int size = V.size();
+		for (int i = 0; i < size; i++) {
+			int random = rand() % size;
+			string temp = V[i];
+			V[i] = V[random];
+			V[random] = temp;
+		}
+		for (int i = 0; i < size; i++) {
+			int random = rand() % size;
+			string temp = V[i];
+			V[i] = V[random];
+			V[random] = temp;
+		}
+	}
+};
+
+
+class player {
+public:
+	vector<player>all_player;
+	vector<string>player_card;
+	vector<string>turn_card;
+	int name;
+	player() {}
+	player(int i) {
+		name = i;
+	}
+	void shuffle(vector<string>& V){
+		int size = V.size();
+		for (int i = 0; i < size; i++) {
+			int random = rand() % size;
+			string temp = V[i];
+			V[i] = V[random];
+			V[random] = temp;
+		}
+		for (int i = 0; i < size; i++) {
+			int random = rand() % size;
+			string temp = V[i];
+			V[i] = V[random];
+			V[random] = temp;
+		}
+	}
+	void player_number(int i,deck D) {
+		if (i <= 1) return;
+		for (int temp = 1; temp <= i; temp++) {
+			int a = temp;
+			all_player.push_back(player(a));
+		}
+		int dealer = rand() % i;
+		for (int temp = 0; temp <= 51; temp++) {//deal cards
+			all_player[(dealer+temp)%i].player_card.push_back(D.Deck[temp]);
+		}
+	}
+	void play(int i) {
+		int champion;
+		deck D;
+		ofstream out("data1.txt");
+		out << "**************initial deck of cards before shuffle****" << endl;
+		for (int temp = 0; temp < 52; temp++) {
+			out << D.Deck[temp] << " ";
+		}
+		out << endl;
+		out << "******************after shuffle**************" << endl;
+		D.shffule(D.Deck);
+		for (int temp = 0; temp < 52; temp++) {
+			out << D.Deck[temp] << " ";
+		}
+		out << endl;
+		out << "******************after cards are dealt**************" << endl;
+		player_number(i, D);
+		for (int temp = 0; temp < i; temp++) {
+			int size = all_player[temp].player_card.size();
+			out << "cards for player " << all_player[temp].name << endl;
+			for (int temp2 = size - 1; temp2 >= 0; temp2--) {
+				out << all_player[temp].player_card[temp2] << " ";
+			}
+			out << endl;
+		}
+		int flag = 0;
+		while (flag==0) {
+			for (int temp = 0; temp < i; temp++) {
+				int size = all_player[temp].player_card.size();
+				out << "Hand " << all_player[temp].name << endl;
+				for (int temp2 = size - 1; temp2 >= 0; temp2--) {
+					out << all_player[temp].player_card[temp2] << " ";
+				}
+				out << endl;
+			}
+			// each turn
+			vector<string> reward;
+			map<char, vector<int>> winner;
+			char m = 'L';
+			for (int temp = 0; temp < i; temp++) {
+				out << "table " << all_player[temp].name << endl;
+				if (all_player[temp].player_card.size() > 0) {
+					out << all_player[temp].player_card.back() << " ";
+					reward.push_back(all_player[temp].player_card.back());
+					all_player[temp].turn_card.push_back(all_player[temp].player_card.back());
+					char a;
+					if (all_player[temp].player_card.back().at(0) == '1' ) {//1 is 10 and 10 is 1
+						 a = 'A';
+					}
+					else if (all_player[temp].player_card.back().at(0) == 'A') {
+						a = '1';
+					}
+					else if (all_player[temp].player_card.back().at(0) == 'K') {
+						a = 'L';
+					}
+					else if (all_player[temp].player_card.back().at(0) == 'Q') {
+						a = 'K';
+					}
+					else {
+						 a = all_player[temp].player_card.back().at(0);
+					}
+						 m = min(m, a);
+						 if (a == 'A') a = '1';
+						 else  if (a == '1')a = 'A';
+						 else  if (a == 'L')a = 'K';
+						 else  if (a == 'K')a = 'Q';
+					if (winner.find(a) == winner.end()) {
+						vector<int> V;
+						winner.insert(pair<char, vector<int>>(a, V));
+					}
+					winner.find(a)->second.push_back(temp);
+					all_player[temp].player_card.pop_back();
+
+				}
+				out << endl;
+			}
+			if (m == 'A') m = '1';
+			else if (m == '1')m = 'A';
+			else  if (m == 'L')m = 'K';
+			else  if (m == 'K')m = 'Q';
+			while (winner.find(m)->second.size() > 1) {//tie
+				vector<int>t;
+				for (int temp = 0; temp < i; temp++) {
+					int size = all_player[temp].player_card.size();
+					out << "Hand " << all_player[temp].name << endl;
+					for (int temp2 = size - 1; temp2 >= 0; temp2--) {
+						out << all_player[temp].player_card[temp2] << " ";
+					}
+					out << endl;
+				}
+				for (auto tier : winner.find(m)->second) {
+					t.push_back(tier);
+				}
+				winner.clear();
+				m = 'L';
+				for (auto tier : t) {//tier send two cards to compare
+					if (all_player[tier].player_card.size() > 0) {
+						all_player[tier].turn_card.push_back(all_player[tier].player_card.back());
+						reward.push_back(all_player[tier].player_card.back());
+						all_player[tier].player_card.pop_back();
+					}
+					if (all_player[tier].player_card.size() > 0) {
+						all_player[tier].turn_card.push_back(all_player[tier].player_card.back());
+						reward.push_back(all_player[tier].player_card.back());
+						char a;
+						if (all_player[tier].player_card.back().at(0) == '1') {//1 is 10 and 10 is 1
+							a = 'A';
+						}
+						else if (all_player[tier].player_card.back().at(0) == 'A') {
+							a = '1';
+						}
+						else if (all_player[tier].player_card.back().at(0) == 'K') {
+							a = 'L';
+						}
+						else if (all_player[tier].player_card.back().at(0) == 'Q') {
+							a = 'K';
+						}
+						else {
+							a = all_player[tier].player_card.back().at(0);
+						}
+						m = min(m, a);
+						if (a == 'A') a = '1';
+						else  if (a == '1')a = 'A';
+						else  if (a == 'L')a = 'K';
+						else  if (a == 'K')a = 'Q';
+						if (winner.find(a) == winner.end()) {
+							vector<int> V;
+							winner.insert(pair<char, vector<int>>(a, V));
+						}
+						winner.find(a)->second.push_back(tier);
+						all_player[tier].player_card.pop_back();
+					}
+				}
+				for (int temp = 0; temp < i; temp++) {
+					out << "table " << all_player[temp].name << endl;
+					for (string c : all_player[temp].turn_card) {//print 
+						out << c << " ";
+					}
+					out << endl;
+				}
+				if (m == 'A') m = '1';
+				else if (m == '1')m = 'A';
+				else  if (m == 'L')m = 'K';
+				else  if (m == 'K')m = 'Q';
+			}
+			int count = 0;
+			int champ = winner.find(m)->second[0];
+			for (int temp = 0; temp < i; temp++) {
+				if (temp == champ) continue;
+				else {
+					if (all_player[temp].player_card.size() < 5) {
+						int size = all_player[temp].player_card.size();
+						for (int temp2 = size - 1; temp2 >= 0; temp2--) {
+							reward.push_back(all_player[temp].player_card.back());
+							all_player[temp].player_card.pop_back();
+						}
+					}
+					else {
+						count++;
+					}
+				}
+			}
+			if (count == 0) flag = 1;//judge whether the game is over
+			for (string s : reward) {//champ for this round get all cards 
+				all_player[champ].player_card.push_back(s);//also need get the  (dont have 5 cards )loser's cards 
+			}
+			all_player[champ].shuffle(all_player[champ].player_card);
+			for (int temp = 0; temp < i; temp++) {//clear this turn;
+				all_player[temp].turn_card.clear();
+			}
+			champion = champ;
+		}
+		out << "Game over!!  The winner is player " << all_player[champion].name << endl;
+		for (int temp = 0; temp < i; temp++) {
+			int size = all_player[temp].player_card.size();
+			out << "Final hand " << all_player[temp].name << endl;
+			for (int temp2 = size - 1; temp2 >= 0; temp2--) {
+				out << all_player[temp].player_card[temp2] << " ";
+			}
+			out << endl;
+		}
+	}
+};
+int main() {
+	player p;
+	p.play(7);
+	getchar();
+	getchar();
+	return 0;
+}
